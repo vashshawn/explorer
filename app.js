@@ -100,9 +100,24 @@ app.use('/ext/getlasttxs/:min', function(req,res){
   });
 });
 
+app.use('/ext/getlastpos', function(req,res){
+  db.get_last_pos(25, function(txs){
+    res.send({data: txs});
+  });
+});
+
 app.use('/ext/connections', function(req,res){
   db.get_peers(function(peers){
     res.send({data: peers});
+  });
+});
+
+app.use('/ext/getrichlist', function(req,res){
+  db.get_richlist(settings.coin, function(richlist){
+    for (var key in richlist.balance) {
+      delete richlist.balance[key].txs;
+    }
+    res.send({data: richlist.balance});
   });
 });
 
