@@ -8,10 +8,10 @@ block content
     .col-xs-12.col-md-10.col-md-offset-1
       .panel.panel-default.panel-address-summary
         .panel-heading(style='position:relative;')        
-          img(src='https://avatars.dicebear.com/v1/male/' + address.a_id + '/30.png', style='margin-right: 10px')
-          strong Address #{address.a_id}
+          img(src='https://avatars.dicebear.com/v1/male/' + address.a_id + '/128.png', style='margin-right: 10px')
+          strong #{address.a_id}
           span.hidden-xs
-            span(style='margin:5px;float:right') #{settings.locale.rl_balance} #{balance.toFixed(8)} #{settings.symbol}
+            span(style='margin:5px;float:right')  #{settings.locale.rl_balance} #{balance.toFixed(8)} #{settings.symbol}
         table.table.table-bordered.table-striped.hidden-lg.hidden-md.hidden-sm
           tr
             td #{settings.locale.rl_balance} 
