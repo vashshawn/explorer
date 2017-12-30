@@ -7,6 +7,7 @@ html
     link(rel='stylesheet', href='//cdn.datatables.net/plug-ins/725b2a2115b/integration/bootstrap/3/dataTables.bootstrap.css')
     link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css')
     link(rel='stylesheet', href='/stylesheets/style.css')
+    meta(name='viewport', content='initial-scale=1, maximum-scale=1')
     script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js')
     script(src='//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js')
     script(src='/vendor/jqplot/jquery.jqplot.min.js')
@@ -21,6 +22,7 @@ html
     script(src='//cdn.datatables.net/responsive/1.0.1/js/dataTables.responsive.js')
     script(src='//cdn.datatables.net/plug-ins/725b2a2115b/integration/bootstrap/3/dataTables.bootstrap.js')
     script(src='/javascripts/chart.js')
+    script(src='//rawgit.com/DiceBear/avatars/master/dist/avatars.pack.min.js')
     script.
       $(document).ready(function(){
         $('##{active}').addClass('active');
@@ -80,142 +82,34 @@ html
       - var time = date + suffix + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;   
       - return time
     -  };
-    .nav.navbar.navbar-default.navbar-fixed-top(role='navigation')
-      .container-fluid
-        .navbar-header
-          button.navbar-toggle(type='button', data-toggle='collapse', data-target='#navbar-collapse')
-            span.sr-only Toggle navigation
-            span.icon-bar
-            span.icon-bar
-            span.icon-bar
-          a.navbar-brand(href='/') #{settings.title}
-        .collapse.navbar-collapse(id='navbar-collapse')
-          ul.nav.navbar-nav
-            li#home
-              a.navbar-link(href='/') 
-                span.glyphicon.glyphicon-search
-                span.menu-text #{settings.locale.menu_explorer}
-            if settings.heavy == true
-              li#reward
-                a.navbar-link(href='/reward')
-                  span.fa.fa-star
-                  span.menu-text #{settings.locale.menu_reward}
-            if settings.display.movement == true
-              li#movement 
-                a.navbar-link.loading(href='/movement') 
-                  span.fa.fa-money
-                  span.menu-text #{settings.locale.menu_movement}
-            if settings.display.network == true
-              li#network
-                a.navbar-link(href='/network')
-                  span.fa.fa-share-alt
-                  span.menu-text #{settings.locale.menu_network}
-            if settings.display.richlist == true
-              li#richlist
-                a.navbar-link(href='/richlist')
-                  span.fa.fa-btc
-                  span.menu-text #{settings.locale.menu_richlist}
-            if settings.display.markets == true
-              li#markets
-                a.navbar-link.loading(href='/markets/#{settings.markets.default}') 
-                  span.fa.fa-line-chart
-                  span.menu-text #{settings.locale.menu_markets}
-            if settings.display.api == true
-              li#info
-                a.navbar-link(href='/info')
-                  span.glyphicon.glyphicon-info-sign
-                  span.menu-text #{settings.locale.menu_api}
-    .col-md-12
-      .row.text-center
-        .col-md-2.col-md-offset-1
-          .panel.panel-default.hidden-sm.hidden-xs
-            .panel-heading
-              if settings.nethash_units == 'K'
-                strong #{settings.locale.network} (KH/s)
-              else if settings.nethash_units == 'M'
-                strong #{settings.locale.network} (MH/s)
-              else if settings.nethash_units == 'G'
-                strong #{settings.locale.network} (GH/s)
-              else if settings.nethash_units == 'T'
-                strong #{settings.locale.network} (TH/s)
-              else if settings.nethash_units == 'P'
-                strong #{settings.locale.network} (PH/s)
-              else if settings.nethash_units == 'H'
-                strong #{settings.locale.network} (H/s)
-            .panel-body
-              if settings.index.difficulty == 'Hybrid'
-               label#hashrate - 
-               <br>
-               label#lblX1  
-              else  
-               label#hashrate - 
-        .col-md-2
-          .panel.panel-default.hidden-sm.hidden-xs
-            .panel-heading
-              strong #{settings.locale.difficulty}
-            .panel-body
-              if settings.index.difficulty == 'Hybrid'
-               label#difficulty -
-               <br>
-               label#difficultyHybrid -
-              else
-               label#difficulty -
-        .col-md-2.col-sm-12
-          img(src='#{settings.logo}', style='margin-top:-15px;height:128px;')
-        .col-md-2
-          .panel.panel-default.hidden-sm.hidden-xs
-            .panel-heading
-              strong #{settings.locale.ex_supply} (#{settings.symbol})
-            .panel-body
-              if settings.index.difficulty == 'Hybrid'
-               label#supply - 
-               <br>
-               label#lblX1
-              else
-               label#supply -  
-        .col-md-2
-          .panel.panel-default.hidden-sm.hidden-xs
-            .panel-heading
-              strong #{settings.markets.exchange} Price
-            .panel-body
-              if settings.index.difficulty == 'Hybrid'
-               label#lastPrice -
-               <br>
-               label#lblX1
-              else
-               label#lastPrice - 
-                 
-      .row.text-center(style='margin-top:10px;margin-bottom:20px;')
-        form.form-inline(method='post', action='/search')      
-          #index-search.form-group
-            input.form-control(type='text', name='search', placeholder='#{settings.locale.ex_search_message}', style='min-width:80%;margin-right:5px;')
+  .row
+    .col-md-11.col-md-offset-1(style='margin-top:10px')
+      form.form-inline(method='post', action='/search')      
+        #index-search.input-group
+          input.form-control(type='text', name='search', placeholder='Search block, transaction or address')
+          span.input-group-btn
             button.btn.btn-success(type='submit') #{settings.locale.ex_search_button}
-    block content
-    .navbar.navbar-default.navbar-fixed-bottom.hidden-xs
-      .col-md-4
-        if settings.display.twitter
-          ul.nav.navbar-nav
-            li.pull-left
-              a#twitter-icon(href="https://twitter.com/#{settings.twitter}", target='_blank')
-                span.glyphicon.fa.fa-twitter
-        if settings.display.facebook
-          ul.nav.navbar-nav
-            li.pull-left
-              a#facebook-icon(href="https://www.facebook.com/#{settings.facebook}", target='_blank')
-                span.glyphicon.fa.fa-facebook
-        if settings.display.googleplus
-          ul.nav.navbar-nav
-            li.pull-left
-              a#googleplus-icon(href="https://plus.google.com/#{settings.googleplus}", target='_blank')
-                span.glyphicon.fa.fa-google-plus
-      .col-md-4
-        ul.nav
-          li.text-center(style='margin-left:80px;margin-right:80px;')
-            p(style='margin-top:15px;') 
-              a.navbar-link(href='https://github.com/iquidus/explorer', target='_blank') Powered by Iquidus Explorer 
+  .row
+    .col-md-2.col-md-offset-1.col-xs-12(style="text-align:center;")
+      a(href='/')
+        img(src='#{settings.logo}', style='margin:25px 5px 0 5px;height:128px;')
+    .col-md-8.col-xs-12
+      div(style='padding:5px')
+        h1 doge so lite. speed. WOW!
+        h5 LDOGE is the crypto currency that's so fast, it's already past the moon.
+        p
+          a.btn.btn-success(href='https://ldoge.tech', target='_blank', style='margin:5px 10px 0 0') link to LiteDoge website
+          a.btn.btn-primary(href='https://github.com/suchapp/litedoge', target='_blank', style='margin:5px 10px 0 0') Copy-paste guide for staking LDOGE
+          
+  block content
+
+  .row
+    .col-md-10.col-md-offset-1
       span.connections
+        a.label.label-default(href='https://github.com/iquidus/explorer', target='_blank', style='margin-right:10px') Powered by Iquidus Explorer
         label#lblBlockcount.label.label-default -
         label#lblConnections.label.label-default -
+        img(src='#{settings.logo}', style='margin:5px 0 5px 5px;height:44px;')
 
 
               
