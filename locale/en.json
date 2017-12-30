@@ -31,7 +31,7 @@
     "tx_block_hash": "Block Hash",
     "tx_recipients": "Recipients",
     "tx_contributors": "Input Addresses",
-    "tx_hash": "Hash",
+    "tx_hash": "Transaction",
     "tx_address": "Address",
     "tx_nonstandard": "NONSTANDARD TX",
 
@@ -55,7 +55,7 @@
     "bits": "Bits",
     "nonce": "Nonce",
     "new_coins": "New Coins",
-    "proof_of_stake": "PoS",
+    "proof_of_stake": "Proof of Stake",
     "initial_index_alert": "Indexing is currently incomplete, functionality is limited until index is up-to-date.",
 
     //address menu
