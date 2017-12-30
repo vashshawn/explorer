@@ -1,167 +1,267 @@
-Iquidus Explorer - 1.6.1
-================
+# Litedoge explorer installation guide
 
-An open source block explorer written in node.js.
+Copy-paste commands to run Iquidus explorer for Litedoge on Ubuntu.
 
-### See it in action
+## Prerequisites
 
-*  [Jumbucks](http://explorer.getjumbucks.com)
-*  [Sphere](http://sphere.iquidus.io)
-*  [SAR](http://explorer.sarcoin.info)
-*  [Vanillacoin](https://blockchain.vanillacoin.net/)
-*  [Neoscoin](http://explorer.infernopool.com/)  
-*  [C2Chain](http://c2chain.info/)
+`litedoged`
 
-*note: If you would like your instance mentioned here contact me*
+Explorer needs a local `litedoged` node to run, fully synced, configured to listen rpc calls, and `txindex` set to true. 
 
-### Requires
+Before installing, follow the litedoge full-node copy-paste installation guide at https://github.com/suchapp/litedoge to setup litedoge full node with correct settings.
 
-*  node.js >= 0.10.28
-*  mongodb 2.6.x
-*  *coind
+`mongodb`
 
-### Create database
+Follow steps to install mongo-db at https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/ or copy-paste these commands:
 
-Enter MongoDB cli:
+```
+apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5
 
-    $ mongo
+echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.6.list
 
-Create databse:
+apt update
 
-    > use explorerdb
+apt install -y mongodb-org
 
-Create user with read/write access:
+systemctl enable mongod.service
 
-    > db.createUser( { user: "iquidus", pwd: "3xp!0reR", roles: [ "readWrite" ] } )
+service mongod start
+```
 
-*note: If you're using mongo shell 2.4.x, use the following to create your user:
+## Create database and mongodb user
 
-    > db.addUser( { user: "username", pwd: "password", roles: [ "readWrite"] })
+Open mongo shell:
 
-### Get the source
+```
+mongo
+```
 
-    git clone https://github.com/iquidus/explorer explorer
+Edit mongodb password before copy-pasting
 
-### Install node modules
+```
+use litedogeexplorerdb
+db.createUser( { user: "litedogeexplorer", pwd: "mongodb-password-here", roles: [ "readWrite" ] } )
+```
 
-    cd explorer && npm install --production
+## Create user
 
-### Configure
+You don't want start litedoge explorer with the root user. Create user `explorer` without log-in rights.
 
-    cp ./settings.json.template ./settings.json
+```
+sudo useradd -s /usr/sbin/nologin -m explorer
+```
 
-*Make required changes in settings.json*
+## Clone the explorer repository
 
-### Start Explorer
+```
+cd /home/explorer && git clone https://github.com/iquidus/explorer
 
-    npm start
+npm install --production
+```
 
-*note: mongod must be running to start the explorer*
+Note: Command above clones the original explorer. If you want to use litedoge theme, you'll need to clone this repository instead.
 
-As of version 1.4.0 the explorer defaults to cluster mode, forking an instance of its process to each cpu core. This results in increased performance and stability. Load balancing gets automatically taken care of and any instances that for some reason die, will be restarted automatically. For testing/development (or if you just wish to) a single instance can be launched with
+## Configure
 
-    node --stack-size=10000 bin/instance
+Edit mongodb password and rpc-password before copy-pasting
 
-To stop the cluster you can use
+```
+cat << "EOF" | sudo tee /home/explorer/explorer/settings.json
 
-    npm stop
+{
+  "title": "LDOGE ranking",
+  "address": "127.0.0.1:3001",
+  "port" : 3001,
+  "coin": "LiteDoge",
+  "symbol": "LDOGE",
+  "logo": "/images/logo.png",
+  "favicon": "public/favicon.ico",
+  "theme": "Superhero", // Uses bootswatch themes (http://bootswatch.com/)
 
-### Syncing databases with the blockchain
+  // LiteDoge chain settings
+  "genesis_tx": "0000032101032f27e7cdddb1196353f7fc9e1b6294717432135add95534f67c6",
+  "genesis_block": "b2926a56ca64e0cd2430347e383f63ad7092f406088b9b86d6d68c2a34baef51",
+  "txcount": 100, //amount of txs to index per address (stores latest n txs)
+  "supply": "GETINFO",
+  "confirmations": 40, // confirmations
+  "nethash": "netmhashps",
 
-sync.js (located in scripts/) is used for updating the local databases. This script must be called from the explorers root directory.
+  // database settings (MongoDB)
+  "dbsettings": {
+    "user": "litedogeexplorer",
+    "password": "mongodb-password-here",
+    "database": "litedogeexplorerdb",
+    "address": "127.0.0.1",
+    "port": 27017
+  },
 
-    Usage: node scripts/sync.js [database] [mode]
+  // wallet settings
+  "wallet": {
+    "host": "localhost",
+    "port": 9332,
+    "user": "litedogerpc",
+    "pass": "rpc-password-here"
+  },
 
-    database: (required)
-    index [mode] Main index: coin info/stats, transactions & addresses
-    market       Market data: summaries, orderbooks, trade history & chartdata
+  "update_timeout": 10, // update script settings
+  "check_timeout": 250,
 
-    mode: (required for index database only)
-    update       Updates index from last sync to current block
-    check        checks index for (and adds) any missing transactions/addresses
-    reindex      Clears index then resyncs from genesis to current block
+  "locale": "locale/en.json", // language settings
 
-    notes:
-    * 'current block' is the latest created block when script is executed.
-    * The market database only supports (& defaults to) reindex mode.
-    * If check mode finds missing data(ignoring new data since last sync),
-      index_timeout in settings.json is set too low.
+  "display": { // menu settings
+    "api": false,
+    "richlist": true,
+    "search": true,
+    "markets": true
+  },
 
+  "markets": {
+    "coin": "LDOGE",
+    "exchange": "LTC",
+    "enabled": ["cryptopia"],
+    "cryptopia_id": "1818",
+    "ccex_key" : "",
+    "default": "cryptopia"
+  },
 
-*It is recommended to have this script launched via a cronjob at 1+ min intervals.*
+  "index": {
+    "show_hashrate": true,
+    "difficulty": "Hybrid",
+    "last_txs": 100
+  },
 
-**crontab**
+  "richlist": { // top100 settings
+    "distribution": false,
+    "received": false,
+    "balance": true
+  }
+}
 
-*Example crontab; update index every minute and market data every 2 minutes*
+EOF
+```
 
-    */1 * * * * cd /path/to/explorer && /usr/bin/nodejs scripts/sync.js index update > /dev/null 2>&1
-    */2 * * * * cd /path/to/explorer && /usr/bin/nodejs scripts/sync.js market > /dev/null 2>&1
-    */5 * * * * cd /path/to/explorer && /usr/bin/nodejs scripts/peers.js > /dev/null 2>&1
+## Chmod
 
-### Wallet
+```
+sudo chown -R explorer:explorer /home/explorer/explorer && cd /home/explorer/explorer
+```
 
-Iquidus Explorer is intended to be generic so it can be used with any wallet following the usual standards. The wallet must be running with atleast the following flags
+## Create `run-explorer` run script for daemon
 
-    -daemon -txindex
+```
+cat << "EOF" | sudo tee /bin/run-explorer
 
-### Donate
+#!/bin/sh -
 
-    BTC: 168hdKA3fkccPtkxnX8hBrsxNubvk4udJi
-    JBS: JZp9893FMmrm1681bDuJBU7c6w11kyEY7D
+/usr/bin/node --stack-size=10000 /home/explorer/explorer/bin/cluster
 
-### Known Issues
+EOF
+```
 
-**script is already running.**
+Chmod 
 
-If you receive this message when launching the sync script either a) a sync is currently in progress, or b) a previous sync was killed before it completed. If you are certian a sync is not in progress remove the index.pid from the tmp folder in the explorer root directory.
+```
+chmod a+x /bin/run-explorer
+```
 
-    rm tmp/index.pid
+## Create systemd service to start explorer automatically
 
-**exceeding stack size**
+We want our explorer to start automatically after a reboot or crash. Create a systemd service for it.
 
-    RangeError: Maximum call stack size exceeded
+```
+cat << "EOF" | sudo tee /lib/systemd/system/explorer.service
+[Unit]
+Description=Litedoge explorer
+After=network.target
 
-Nodes default stack size may be too small to index addresses with many tx's. If you experience the above error while running sync.js the stack size needs to be increased.
+[Service]
+Type=simple
+User=explorer
+ExecStart=/usr/bin/node --stack-size=10000 /home/explorer/explorer/bin/cluster
+WorkingDirectory=/home/explorer/explorer
+Restart=on-failure
+SyslogIdentifier=LDOGEXPLR
+RestartSec=30
 
-To determine the default setting run
+StandardOutput=syslog
+StandardError=syslog
 
-    node --v8-options | grep -B0 -A1 stack_size
+[Install]
+WantedBy=multi-user.target
+Alias=explorer.service
 
-To run sync.js with a larger stack size launch with
+EOF
+```
 
-    node --stack-size=[SIZE] scripts/sync.js index update
+Enable the service:
 
-Where [SIZE] is an integer higher than the default.
+```
+systemctl daemon-reload && systemctl enable explorer.service
+```
 
-*note: SIZE will depend on which blockchain you are using, you may need to play around a bit to find an optimal setting*
+Every time you change something in `/lib/systemd/system/explorer.service`, you need to run `sudo systemctl daemon-reload`.
 
-### License
+## Start the service
 
-Copyright (c) 2015, Iquidus Technology  
-Copyright (c) 2015, Luke Williams  
-All rights reserved.
+```
+service explorer start
+```
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
+Since we have created an alias for the service, we will be able to work with it in the future as follows:
 
-* Redistributions of source code must retain the above copyright notice, this
-  list of conditions and the following disclaimer.
+```
+sudo service explorer start|stop|restart|status
+```
 
-* Redistributions in binary form must reproduce the above copyright notice,
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
+## Start the initial sync and create missing indexes
 
-* Neither the name of Iquidus Technology nor the names of its
-  contributors may be used to endorse or promote products derived from
-  this software without specific prior written permission.
+Both `litedoged` and `explorer` needs to be running for sync to work.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```
+cd /home/explorer/explorer
+
+node scripts/sync.js index reindex
+```
+
+Open mongo shell:
+
+```
+mongo
+```
+
+Create missing indexes:
+
+```
+use litedogeexplorerdb
+
+db.addresses.createIndex({"a_id":1})
+
+db.addresses.createIndex({"timestamp":1})
+
+db.txes.createIndex({"txid":1})
+
+db.txes.createIndex({"timestamp":1})
+
+db.txes.createIndex({"blockindex":1})
+
+```
+
+## Restart sync if needed
+
+If sync fails or you need to interrupt it, remove the .pid file and restart sync with `update` parameter:
+
+```
+rm tmp/index.pid
+
+node scripts/sync.js index update
+```
+
+## Set crontab to update db every minute
+
+```
+crontab -e
+
+*/1 * * * * cd /home/explorer/explorer && /usr/bin/nodejs scripts/sync.js index update > /dev/null 2>&1
+*/2 * * * * cd /home/explorer/explorer && /usr/bin/nodejs scripts/sync.js market > /dev/null 2>&1
+*/5 * * * * cd /home/explorer/explorer && /usr/bin/nodejs scripts/peers.js > /dev/null 2>&1
+```
