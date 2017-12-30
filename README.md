@@ -2,6 +2,8 @@
 
 Copy-paste commands to run Iquidus explorer for Litedoge on Ubuntu.
 
+![alt text](https://raw.githubusercontent.com/suchapp/explorer/master/screenshot.png "screenshot")
+
 ## Prerequisites
 
 `litedoged`
